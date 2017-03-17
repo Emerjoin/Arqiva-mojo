@@ -29,6 +29,9 @@ import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
+import org.emerjoin.arqiva.core.ArqivaProject;
+import org.emerjoin.arqiva.core.ArqivaProjectContext;
+import org.emerjoin.arqiva.core.Project;
 
 /**
  * @author Mário Júnior
@@ -47,6 +50,9 @@ public class ArqivaRunMojo extends AbstractArqivaMojo {
 
     @Parameter( defaultValue = "${project.remoteProjectRepositories}", readonly = true, required = true )
     private List<RemoteRepository> repositories;
+
+    @Parameter(defaultValue = "false")
+    private boolean buildTopicsTreeForEachServletRequest;
 
 
     private File resolveArtifact(Artifact unresolvedArtifact) throws MojoExecutionException{
@@ -79,15 +85,17 @@ public class ArqivaRunMojo extends AbstractArqivaMojo {
 
     }
 
+
+
     public void execute() throws MojoExecutionException
     {
-
 
         String projectDirectory = getProject().getBuild().getDirectory();
         String webappDirLocation = projectDirectory+getDocsDirectory();
 
-        getLog().info("Creating project context");
-
+        Project arqivaProject = createProject();
+        ArqivaRunServlet.INVALIDATE_TOPICS_TREE = buildTopicsTreeForEachServletRequest;
+        ArqivaRunServlet.ARQIVA_PROJECT = arqivaProject;
 
         Tomcat tomcat = new Tomcat();
 

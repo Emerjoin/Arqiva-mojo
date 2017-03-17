@@ -5,6 +5,9 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.emerjoin.arqiva.core.ArqivaProject;
+import org.emerjoin.arqiva.core.ArqivaProjectContext;
+import org.emerjoin.arqiva.core.Project;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,8 +28,8 @@ public abstract class AbstractArqivaMojo extends AbstractMojo {
     @Parameter(readonly = true, defaultValue = "${project}")
     private MavenProject project;
 
-    @Parameter(defaultValue = "false")
-    private boolean buildTopicsTreeForEachServletRequest;
+    @Parameter(defaultValue = "${project.build.directory}")
+    private String outputDirectory;
 
     protected String getContextValuesFile(){
 
@@ -72,10 +75,29 @@ public abstract class AbstractArqivaMojo extends AbstractMojo {
     }
 
 
-    protected boolean isBuildTopicsTreeForEachServletRequest(){
+    protected String getOutputDirectory(){
 
-        return buildTopicsTreeForEachServletRequest;
+        return outputDirectory;
 
     }
+
+    protected Project createProject() throws MojoExecutionException{
+
+        getLog().info("Creating Arqiva project context and project...");
+        String projectDirectory = getProject().getBuild().getDirectory();
+        String webappDirLocation = projectDirectory+getDocsDirectory();
+
+        Properties contextProperties = readContextProperties();
+
+        ArqivaProjectContext projectContext = new ArqivaProjectContext(webappDirLocation,outputDirectory);
+        for(String key : contextProperties.stringPropertyNames())
+            projectContext.getValues().put(key,contextProperties.getProperty(key));
+
+        return new ArqivaProject(projectContext);
+
+
+    }
+
+
 
 }

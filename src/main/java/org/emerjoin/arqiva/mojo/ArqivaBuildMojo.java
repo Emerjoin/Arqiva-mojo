@@ -11,8 +11,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 @Mojo(name ="build")
 public class ArqivaBuildMojo extends AbstractArqivaMojo {
 
-    @Parameter(defaultValue = "${project.build.directory}")
-    private String outputDirectory;
+
 
     @Parameter(defaultValue = "")
     private String projectBuilderName;
@@ -22,12 +21,6 @@ public class ArqivaBuildMojo extends AbstractArqivaMojo {
         getLog().info( "Hello, world." );
     }
 
-
-    protected String getOutputDirectory(){
-
-        return outputDirectory;
-
-    }
 
 
 }

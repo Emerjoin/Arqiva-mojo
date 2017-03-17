@@ -12,24 +12,19 @@ import java.io.IOException;
 /**
  * @author Mário Júnior
  */
+@WebServlet(name = "ArqivaRun",urlPatterns = "/*")
 public class ArqivaRunServlet extends HttpServlet {
 
-    private boolean invalidateTopicsTree = false;
-    private Project arqivaProject = null;
+    protected static boolean INVALIDATE_TOPICS_TREE = false;
+    protected static Project ARQIVA_PROJECT = null;
 
-    public ArqivaRunServlet(Project arqivaProject, boolean invalidateTopicsTree){
-
-        this.arqivaProject = arqivaProject;
-        this.invalidateTopicsTree = invalidateTopicsTree;
-
-    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        if(invalidateTopicsTree)
-            arqivaProject.invalidateTopicsTree();
+        if(INVALIDATE_TOPICS_TREE)
+            ARQIVA_PROJECT.invalidateTopicsTree();
 
 
         //TODO: Render page here
