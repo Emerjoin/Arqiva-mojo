@@ -1,37 +1,35 @@
 package org.emerjoin.arqiva.mojo;
 
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.webresources.JarResourceSet;
+import org.apache.catalina.*;
+import org.apache.catalina.loader.WebappLoader;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
-import org.apache.catalina.WebResourceRoot;
-import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.Tomcat;
-import org.apache.catalina.webresources.DirResourceSet;
-import org.apache.catalina.webresources.StandardRoot;
 
-import javax.servlet.ServletException;
 import java.io.File;
-import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.collection.CollectRequest;
+import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.repository.RemoteRepository;
-import org.eclipse.aether.resolution.ArtifactRequest;
-import org.eclipse.aether.resolution.ArtifactResolutionException;
-import org.eclipse.aether.resolution.ArtifactResult;
-import org.emerjoin.arqiva.core.ArqivaProject;
-import org.emerjoin.arqiva.core.ArqivaProjectContext;
+import org.eclipse.aether.resolution.*;
+import org.eclipse.aether.util.artifact.JavaScopes;
+import org.eclipse.aether.util.filter.DependencyFilterUtils;
 import org.emerjoin.arqiva.core.Project;
+import org.emerjoin.arqiva.web.Middleware;
 
 /**
  * @author Mário Júnior
@@ -54,6 +52,37 @@ public class ArqivaRunMojo extends AbstractArqivaMojo {
     @Parameter(defaultValue = "false")
     private boolean buildTopicsTreeForEachServletRequest;
 
+    private List<URL> getDependencies(org.eclipse.aether.artifact.Artifact artifact) throws MojoExecutionException{
+
+        List<URL> dependencies = new ArrayList<>();
+
+        try {
+
+            //TODO: Read POM and fetch more remote repositories
+            RemoteRepository central = new RemoteRepository.Builder("central", "default", "http://repo1.maven.org/maven2/").build();
+            //CollectRequest collectRequest = new CollectRequest(new Dependency(artifact, JavaScopes.COMPILE), Arrays.asList(central));
+            CollectRequest collectRequest = new CollectRequest(new Dependency(artifact, JavaScopes.COMPILE), repositories);
+            DependencyFilter filter = DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE, JavaScopes.RUNTIME);
+            DependencyRequest request = new DependencyRequest(collectRequest, filter);
+            DependencyResult result = repoSystem.resolveDependencies(repoSession, request);
+
+            for (ArtifactResult artifactResult : result.getArtifactResults()) {
+
+                File artifactFile = artifactResult.getArtifact().getFile();
+                if(artifactFile!=null)
+                    dependencies.add(artifactFile.toURI().toURL());
+
+            }
+
+        }catch (Exception ex){
+
+            throw new MojoExecutionException("Failed to resolve dependencies",ex);
+
+        }
+
+        return dependencies;
+
+    }
 
     private File resolveArtifact(Artifact unresolvedArtifact) throws MojoExecutionException{
 
@@ -74,6 +103,7 @@ public class ArqivaRunMojo extends AbstractArqivaMojo {
             throw new MojoExecutionException("Artifact " + artifactId + "could not be resolved.", e );
         }
 
+
         // The file should exists, but we never know.
         File file = resolutionResult.getArtifact().getFile();
         if( file == null || ! file.exists()) {
@@ -87,80 +117,108 @@ public class ArqivaRunMojo extends AbstractArqivaMojo {
 
 
 
+
     public void execute() throws MojoExecutionException
     {
 
-        String projectDirectory = getProject().getBuild().getDirectory();
-        String webappDirLocation = projectDirectory+getDocsDirectory();
+        if(!getProject().getPackaging().toLowerCase().equals("war")){
+            getLog().info("Cant run a project with packing different from WAR. Exiting...");
+            return;
+        }
 
+        String webDirectory = projectDirectory()+"/"+getDocsDirectory();
         Project arqivaProject = createProject();
-        ArqivaRunServlet.INVALIDATE_TOPICS_TREE = buildTopicsTreeForEachServletRequest;
-        ArqivaRunServlet.ARQIVA_PROJECT = arqivaProject;
+        watchProjectDirectory();
+
+        Middleware.INVALIDATE_TOPICS_TREE = buildTopicsTreeForEachServletRequest;
+        Middleware.ARQIVA_PROJECT = arqivaProject;
 
         Tomcat tomcat = new Tomcat();
-
         if(serverPort <0)
             serverPort = 9610;
 
         tomcat.setPort(serverPort);
-        StandardContext ctx =  null;
+
+        getLog().info("Running project from : "+webDirectory);
+        setupContainerContext(tomcat,webDirectory);
 
         try {
 
-            ctx = (StandardContext) tomcat.addWebapp("/", new File(webappDirLocation).getAbsolutePath());
-            getLog().info("configuring tomcat server with basedir: " + webappDirLocation);
-
-        }catch (ServletException ex){
-
-            throw new MojoExecutionException("Failed to configure tomcat server",ex);
-
-        }
-
-        WebResourceRoot resources = new StandardRoot(ctx);
-        Set<Artifact> artifactSet = getProject().getDependencyArtifacts();
-        for(Artifact dependency : artifactSet){
-
-            String scope = dependency.getScope();
-            if(!(scope.equals("compile")||scope.equals("provided")||scope.equals("runtime")))
-                continue;
-
-            File artifactFile = null;
-
-            if(dependency.isResolved())
-                artifactFile = dependency.getFile();
-            else
-                resolveArtifact(dependency);
-
-            if(artifactFile==null)
-                continue;
-
-            resources.addJarResources(new JarResourceSet(resources,"/WEB-INF/lib",artifactFile.getParentFile().getAbsolutePath(),"/"));
-
-        }
-
-        // Declare an alternative location for your "WEB-INF/classes" dir
-        // Servlet 3.0 annotation will work
-        /*
-        File additionWebInfClasses = new File("target/classes");
-        resources.addJarResources(new JarResourceSet());
-        resources.addPreResources(new DirResourceSet(resources, "/WEB-INF/classes",
-                additionWebInfClasses.getAbsolutePath(), "/"));
-       */
-
-
-        try {
-
-            ctx.setResources(resources);
-
-            getLog().info("Starting tomcat...");
             tomcat.start();
             tomcat.getServer().await();
 
-        }catch (LifecycleException ex){
+        }catch (Throwable ex){
 
             throw new MojoExecutionException("Failed to start tomcat server",ex);
 
         }
+
+    }
+
+    private void setupContainerContext(Tomcat tomcat, String webDirectory) throws MojoExecutionException{
+
+        Context context = tomcat.addContext("/arqiva",webDirectory);
+
+        Wrapper defaultServlet = tomcat.addServlet(context,"default","org.apache.catalina.servlets.DefaultServlet");
+        defaultServlet.setName("default");
+        defaultServlet.setServletClass("org.apache.catalina.servlets.DefaultServlet");
+        defaultServlet.addInitParameter("debug", "0");
+        defaultServlet.addInitParameter("listings", "false");
+        defaultServlet.setLoadOnStartup(1);
+        context.addServletMapping("/","default");
+
+        ArqivaClassLoader.libs = getArtifactsUrls();
+        ArqivaClassLoader.parentClassLoader = (ClassRealm) getClass().getClassLoader();
+        for(URL url : ArqivaClassLoader.libs)
+            ArqivaClassLoader.parentClassLoader.addURL(url);
+
+        //tomcat.setBaseDir(webappDirLocation);
+        Wrapper arqivaRunServlet = tomcat.addServlet(context,"arqivaRun","org.emerjoin.arqiva.web.ArqivaRunServlet");
+        arqivaRunServlet.addInitParameter("debug", "1");
+        arqivaRunServlet.setLoadOnStartup(1);
+        context.addServletMapping("*.html","arqivaRun");
+        WebappLoader webappLoader = new WebappLoader(context.getParentClassLoader());
+        webappLoader.setLoaderClass(ArqivaClassLoader.class.getName());
+        context.setLoader(webappLoader);
+
+    }
+
+
+    private URL[] getArtifactsUrls() throws MojoExecutionException{
+
+       List<URL> urlList = new ArrayList<>();
+       Set<Artifact> dependencies =  getProject().getDependencyArtifacts();
+       for(Artifact dependency : dependencies){
+
+           String scope = dependency.getScope().toLowerCase();
+           if(!(scope.equals("compile")||scope.equals("runtime")))
+               continue;
+
+           File dependencyFile = null;
+           if(dependency.isResolved())
+               dependencyFile = dependency.getFile();
+           else dependencyFile = resolveArtifact(dependency);
+
+           try {
+
+               if(dependencyFile==null)
+                   continue;
+
+               urlList.add(dependencyFile.toURI().toURL());
+               org.eclipse.aether.artifact.Artifact artifact = new DefaultArtifact(String.format("%s:%s:%s",
+                       dependency.getGroupId(),dependency.getArtifactId(),dependency.getVersion()));
+
+               List<URL> urls = getDependencies(artifact);
+               urlList.addAll(urls);
+
+           }catch (MalformedURLException ex){
+               throw new MojoExecutionException("Failed to generate artifact URL",ex);
+           }
+       }
+
+        URL[] dependenciesArray = new URL[urlList.size()];
+        urlList.toArray(dependenciesArray);
+        return dependenciesArray;
 
     }
 
