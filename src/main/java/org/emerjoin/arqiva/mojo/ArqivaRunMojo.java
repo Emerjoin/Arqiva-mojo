@@ -40,7 +40,7 @@ public class ArqivaRunMojo extends AbstractArqivaMojo {
     @Parameter(defaultValue = "9610")
     private int serverPort;
 
-    @Parameter(defaultValue = "false")
+    @Parameter(defaultValue = "true")
     private boolean buildTopicsTreeForEachServletRequest;
 
 

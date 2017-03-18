@@ -139,8 +139,7 @@ public abstract class AbstractArqivaMojo extends AbstractMojo {
                     }
                 }catch (Exception ex){
 
-                    if(!(ex instanceof InterruptedException))
-                        getLog().error(projectDirectory()+" watching failed",ex);
+
 
                 }
 
