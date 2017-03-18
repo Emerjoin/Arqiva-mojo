@@ -13,7 +13,7 @@ import org.emerjoin.arqiva.core.Project;
 public class ArqivaBuildMojo extends AbstractArqivaMojo {
 
     @Parameter(defaultValue = "")
-    private String projectBuilderName;
+    private String projectBuilderName="";
 
     public void execute() throws MojoExecutionException
     {
@@ -24,10 +24,9 @@ public class ArqivaBuildMojo extends AbstractArqivaMojo {
             getLog().info("Building Arqiva project with "+projectBuilderName+" builder");
 
         Project arqivaProject = createProject();
+        configureClassLoaders();
         Arqiva arqiva = new Arqiva(arqivaProject);
         arqiva.buildProject(projectBuilderName);
-
-        getLog().info("Arqiva project build succeeded!");
 
     }
 
