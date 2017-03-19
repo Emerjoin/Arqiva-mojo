@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.tomcat.util.descriptor.web.FilterDef;
+import org.apache.tomcat.util.descriptor.web.FilterMap;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
@@ -97,6 +99,20 @@ public class ArqivaRunMojo extends AbstractArqivaMojo {
         defaultServlet.addInitParameter("listings", "false");
         defaultServlet.setLoadOnStartup(1);
         context.addServletMapping("/","default");
+
+
+        FilterDef filterDef = new FilterDef();
+        filterDef.setFilterClass("org.apache.catalina.filters.ExpiresFilter");
+        filterDef.setFilterName("Expires");
+        filterDef.setDisplayName("Expires-filter");
+        filterDef.addInitParameter("ExpiresDefault","access plus 1 second");
+
+        FilterMap filterMap = new FilterMap();
+        filterMap.setFilterName("Expires");
+        filterMap.addURLPattern("/*");
+
+        context.addFilterDef(filterDef);
+        context.addFilterMap(filterMap);
 
         configureClassLoaders();
 
