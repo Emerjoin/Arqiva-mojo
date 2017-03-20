@@ -103,6 +103,12 @@
             <version>${arqivaVersion}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.emerjoin</groupId>
+            <artifactId>arqiva-core</artifactId>
+            <version>${arqivaVersion}</version>
+        </dependency>
+
     </dependencies>
 
     <!--Emerjoin's maven repository-->

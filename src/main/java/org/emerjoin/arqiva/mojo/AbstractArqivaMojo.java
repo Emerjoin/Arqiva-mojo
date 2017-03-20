@@ -87,7 +87,7 @@ public abstract class AbstractArqivaMojo extends AbstractMojo {
 
     protected Properties readContextProperties() throws MojoExecutionException {
 
-        String propertiesFilePath = projectDirectory()+"/"+contextValuesPropertiesFile;
+        String propertiesFilePath = projectDirectory()+File.separator+contextValuesPropertiesFile;
         Properties properties = new Properties();
 
         File file = new File(propertiesFilePath);
@@ -193,7 +193,7 @@ public abstract class AbstractArqivaMojo extends AbstractMojo {
             return arqivaProject;
 
         getLog().info("Creating Arqiva project context and project...");
-        String webappDirLocation = projectDirectory()+"/"+getDocsDirectory();
+        String webappDirLocation = projectDirectory()+File.separator+getDocsDirectory();
 
         Properties contextProperties = readContextProperties();
 

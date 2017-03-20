@@ -47,7 +47,7 @@ public class ArqivaRunMojo extends AbstractArqivaMojo {
             return;
         }
 
-        String webDirectory = projectDirectory()+"/"+getDocsDirectory();
+        String webDirectory = projectDirectory()+File.separator+getDocsDirectory();
         Project arqivaProject = createProject();
         watchProjectDirectory();
 
