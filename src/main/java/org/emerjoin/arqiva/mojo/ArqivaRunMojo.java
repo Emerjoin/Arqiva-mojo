@@ -5,6 +5,7 @@ import org.apache.catalina.loader.WebappLoader;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
@@ -19,24 +20,13 @@ import java.util.Set;
 
 import org.apache.tomcat.util.descriptor.web.FilterDef;
 import org.apache.tomcat.util.descriptor.web.FilterMap;
-import org.codehaus.plexus.classworlds.realm.ClassRealm;
-import org.eclipse.aether.RepositorySystem;
-import org.eclipse.aether.RepositorySystemSession;
-import org.eclipse.aether.artifact.DefaultArtifact;
-import org.eclipse.aether.collection.CollectRequest;
-import org.eclipse.aether.graph.Dependency;
-import org.eclipse.aether.graph.DependencyFilter;
-import org.eclipse.aether.repository.RemoteRepository;
-import org.eclipse.aether.resolution.*;
-import org.eclipse.aether.util.artifact.JavaScopes;
-import org.eclipse.aether.util.filter.DependencyFilterUtils;
 import org.emerjoin.arqiva.core.Project;
 import org.emerjoin.arqiva.web.Middleware;
 
 /**
  * @author Mário Júnior
  */
-@Mojo(name = "run")
+@Mojo(name = "run",defaultPhase = LifecyclePhase.INSTALL)
 public class ArqivaRunMojo extends AbstractArqivaMojo {
 
     @Parameter(defaultValue = "9610")
