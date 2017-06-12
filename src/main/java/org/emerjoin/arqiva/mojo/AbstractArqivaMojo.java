@@ -39,7 +39,7 @@ import java.util.Set;
 public abstract class AbstractArqivaMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "arqiva.properties")
-    private String contextValuesPropertiesFile;
+    private String contextValuesPropsFile;
 
     @Parameter(defaultValue = "docs-project")
     private String docsDirectory;
@@ -63,7 +63,7 @@ public abstract class AbstractArqivaMojo extends AbstractMojo {
 
     protected String getContextValuesFile(){
 
-        return contextValuesPropertiesFile;
+        return contextValuesPropsFile;
 
     }
 
@@ -87,7 +87,7 @@ public abstract class AbstractArqivaMojo extends AbstractMojo {
 
     protected Properties readContextProperties() throws MojoExecutionException {
 
-        String propertiesFilePath = projectDirectory()+File.separator+contextValuesPropertiesFile;
+        String propertiesFilePath = projectDirectory()+File.separator+ contextValuesPropsFile;
         Properties properties = new Properties();
 
         File file = new File(propertiesFilePath);
@@ -163,7 +163,7 @@ public abstract class AbstractArqivaMojo extends AbstractMojo {
 
     protected void handleFileChanged(Path fileChanged){
 
-        if(fileChanged.endsWith(contextValuesPropertiesFile)&&arqivaProject!=null){
+        if(fileChanged.endsWith(contextValuesPropsFile)&&arqivaProject!=null){
 
 
             try {

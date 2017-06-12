@@ -2,9 +2,7 @@ package org.emerjoin.arqiva.mojo;
 
 import org.apache.catalina.*;
 import org.apache.catalina.loader.WebappLoader;
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -12,11 +10,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.catalina.startup.Tomcat;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 import org.apache.tomcat.util.descriptor.web.FilterDef;
 import org.apache.tomcat.util.descriptor.web.FilterMap;
@@ -33,7 +26,7 @@ public class ArqivaRunMojo extends AbstractArqivaMojo {
     private int serverPort;
 
     @Parameter(defaultValue = "true")
-    private boolean buildTopicsTreeForEachServletRequest;
+    private boolean buildTopicsTreeForEachServletReq;
 
 
 
@@ -51,7 +44,7 @@ public class ArqivaRunMojo extends AbstractArqivaMojo {
         Project arqivaProject = createProject();
         watchProjectDirectory();
 
-        Middleware.INVALIDATE_TOPICS_TREE = buildTopicsTreeForEachServletRequest;
+        Middleware.INVALIDATE_TOPICS_TREE = buildTopicsTreeForEachServletReq;
         Middleware.ARQIVA_PROJECT = arqivaProject;
 
         Tomcat tomcat = new Tomcat();
