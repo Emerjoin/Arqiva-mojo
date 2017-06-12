@@ -10,6 +10,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.catalina.startup.Tomcat;
 
 import java.io.File;
+import java.nio.file.Files;
 
 import org.apache.tomcat.util.descriptor.web.FilterDef;
 import org.apache.tomcat.util.descriptor.web.FilterMap;
@@ -54,11 +55,13 @@ public class ArqivaRunMojo extends AbstractArqivaMojo {
 
         tomcat.setPort(serverPort);
 
+
         getLog().info("Running project from : "+webDirectory);
         setupContainerContext(tomcat,webDirectory);
 
         try {
 
+            tomcat.setBaseDir(Files.createTempDirectory("arqiva").toAbsolutePath().toString());
             tomcat.start();
             tomcat.getServer().await();
 
