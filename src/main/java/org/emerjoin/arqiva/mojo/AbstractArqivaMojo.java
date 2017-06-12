@@ -17,6 +17,7 @@ import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.*;
 import org.eclipse.aether.util.artifact.JavaScopes;
 import org.eclipse.aether.util.filter.DependencyFilterUtils;
+import org.emerjoin.arqiva.core.Arqiva;
 import org.emerjoin.arqiva.core.ArqivaProject;
 import org.emerjoin.arqiva.core.ArqivaProjectContext;
 import org.emerjoin.arqiva.core.Project;
@@ -58,6 +59,10 @@ public abstract class AbstractArqivaMojo extends AbstractMojo {
 
     @Parameter( defaultValue = "${project.remoteProjectRepositories}", readonly = true, required = true )
     private List<RemoteRepository> repositories;
+
+
+    @Parameter( defaultValue = Arqiva.START_POINT_INDEX)
+    private String startPoint;
 
     private Project arqivaProject = null;
 
@@ -319,6 +324,13 @@ public abstract class AbstractArqivaMojo extends AbstractMojo {
         URL[] dependenciesArray = new URL[urlList.size()];
         urlList.toArray(dependenciesArray);
         return dependenciesArray;
+
+    }
+
+
+    protected String getStartPoint(){
+
+        return startPoint;
 
     }
 

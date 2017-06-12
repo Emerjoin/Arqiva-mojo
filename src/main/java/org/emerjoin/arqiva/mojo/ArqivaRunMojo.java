@@ -46,6 +46,7 @@ public class ArqivaRunMojo extends AbstractArqivaMojo {
 
         Middleware.INVALIDATE_TOPICS_TREE = buildTopicsTreeForEachServletReq;
         Middleware.ARQIVA_PROJECT = arqivaProject;
+        Middleware.START_POINT = getStartPoint();
 
         Tomcat tomcat = new Tomcat();
         if(serverPort <0)

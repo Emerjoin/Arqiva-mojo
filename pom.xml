@@ -6,12 +6,12 @@
 
     <groupId>org.emerjoin.arqiva</groupId>
     <artifactId>arqiva-maven-plugin</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
 
     <properties>
         <aetherVersion>1.1.0</aetherVersion>
-        <arqivaVersion>1.0.0-SNAPSHOT</arqivaVersion>
+        <arqivaVersion>1.0.1-SNAPSHOT</arqivaVersion>
         <tomcat.version>8.0.28</tomcat.version>
     </properties>
 

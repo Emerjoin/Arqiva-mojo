@@ -26,6 +26,7 @@ public class ArqivaBuildMojo extends AbstractArqivaMojo {
         Project arqivaProject = createProject();
         configureClassLoaders();
         Arqiva arqiva = new Arqiva(arqivaProject);
+        arqiva.setStartPoint(getStartPoint());
         arqiva.buildProject(projectBuilderName);
 
     }
