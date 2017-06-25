@@ -64,6 +64,9 @@ public abstract class AbstractArqivaMojo extends AbstractMojo {
     @Parameter( defaultValue = Arqiva.START_POINT_INDEX)
     private String startPoint;
 
+    @Parameter(defaultValue = "topics")
+    private String topicsDirectory;
+
     private Project arqivaProject = null;
 
     protected String getContextValuesFile(){
@@ -334,5 +337,7 @@ public abstract class AbstractArqivaMojo extends AbstractMojo {
 
     }
 
-
+    protected String getTopicsDirectory() {
+        return topicsDirectory;
+    }
 }
