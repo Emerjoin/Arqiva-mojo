@@ -1,6 +1,7 @@
 package org.emerjoin.arqiva.mojo;
 
 import org.apache.catalina.*;
+import org.apache.catalina.connector.Connector;
 import org.apache.catalina.loader.WebappLoader;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -37,7 +38,7 @@ public class ArqivaRunMojo extends AbstractArqivaMojo {
     {
 
         if(!getProject().getPackaging().toLowerCase().equals("war")){
-            getLog().info("Cant run a project with packing different from WAR. Exiting...");
+            getLog().error("Cant run a project with packing different from WAR. Exiting...");
             return;
         }
 
@@ -64,7 +65,10 @@ public class ArqivaRunMojo extends AbstractArqivaMojo {
 
             tomcat.setBaseDir(Files.createTempDirectory("arqiva").toAbsolutePath().toString());
             tomcat.start();
+            String url = "http://localhost:"+serverPort+"/arqiva/index.html";
+            System.out.println("Browse your project at "+url);
             tomcat.getServer().await();
+
 
         }catch (Throwable ex){
 
